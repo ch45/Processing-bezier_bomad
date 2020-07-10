@@ -2,15 +2,19 @@
 // bezier_bomad.pde
 //
 
+public void setup() {
+  size(1280, 720);
+
+}
+
 void draw() {
+  fill(255, 102, 0);
+  stroke(255, 102, 0);
+
+  float bezierCurves[][] = scaleBezierCurves(getShapeAsBezierCurves(), 6.0, 6.0, 0.0, 0.0);
+
   int maxPoints = 100;
-
-  noFill();
-  stroke(255,102,0);
-
-  float bezierCurves[][] = getShapeAsBezierCurves();
   int numCurves = bezierCurves.length;
-//  println("numCurves = " + numCurves);
   for (int iCurve = 0; iCurve < numCurves; iCurve++) {
     PVector[] pointsToDraw = bezierToPoints(bezierCurves[iCurve], maxPoints);
     for (int i=0; i < pointsToDraw.length; i++) {
@@ -20,9 +24,6 @@ void draw() {
 }
 
 PVector[] bezierToPoints(float[] bezierCurve, int maxPoints) {
-  int numPoints = bezierCurve.length;
-//  println("numPoints = " + numPoints);
-
   float x1 = bezierCurve[0];
   float y1 = bezierCurve[1];
   float x2 = bezierCurve[2];
@@ -41,6 +42,24 @@ PVector[] bezierToPoints(float[] bezierCurve, int maxPoints) {
     bezierPoints[i] = new PVector(x, y);
   }
   return bezierPoints;
+}
+
+float[][] scaleBezierCurves(float[][] bezierCurves, float mx, float my, float cx, float cy) {
+  int numCurves = bezierCurves.length;
+
+  for (int iCurve = 0; iCurve < numCurves; iCurve++) {
+    float[] bezierCurve = bezierCurves[iCurve];
+    bezierCurve[0] *= mx; bezierCurve[0] += cx;
+    bezierCurve[1] *= my; bezierCurve[1] += cy;
+    bezierCurve[2] *= mx; bezierCurve[2] += cx;
+    bezierCurve[3] *= my; bezierCurve[3] += cy;
+    bezierCurve[4] *= mx; bezierCurve[4] += cx;
+    bezierCurve[5] *= my; bezierCurve[5] += cy;
+    bezierCurve[6] *= mx; bezierCurve[6] += cx;
+    bezierCurve[7] *= my; bezierCurve[7] += cy;
+  }
+  
+  return bezierCurves;
 }
 
 float[][] getShapeAsBezierCurves() {
