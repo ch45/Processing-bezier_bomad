@@ -18,10 +18,11 @@ void draw() {
   float bezierCurves[][] = scaleBezierCurves(getShapeAsBezierCurves(), 6.0, 6.0, 0.0, 0.0);
 
   int maxPoints = 100;
+  float maxAngle = TWO_PI * 1.5 / 360; // 0.29 => 94 points
   int count = 0;
   for (float[] bez : bezierCurves) {
     // PVector[] pointsToDraw = bezierToPointsUnoptimized(bez, maxPoints);
-    PVector[] pointsToDraw = bezierToPointsBinTreeOptimized(bez, maxPoints);
+    PVector[] pointsToDraw = bezierToPointsBinTreeOptimized(bez, maxAngle);
     for (PVector vec : pointsToDraw) {
       ellipse(vec.x, vec.y, 5, 5);
       count++;
@@ -53,7 +54,7 @@ PVector[] bezierToPointsUnoptimized(float[] bezierCurve, int maxPoints) {
   return bezierPoints;
 }
 
-PVector[] bezierToPointsBinTreeOptimized(float[] bezierCurve, int maxPoints) {
+PVector[] bezierToPointsBinTreeOptimized(float[] bezierCurve, float maxAngle) {
   float x1 = bezierCurve[0];
   float y1 = bezierCurve[1];
   float x2 = bezierCurve[2];
@@ -76,8 +77,6 @@ PVector[] bezierToPointsBinTreeOptimized(float[] bezierCurve, int maxPoints) {
   ArrayDeque<BinTree> btStack = new ArrayDeque<BinTree>();
   btStack.push(root);
 
-  int countL = 6; // maxPoints (possibly!)
-  int countR = 6; // maxPoints (possibly!)
   BinTree cur;
   while ((cur = btStack.poll()) != null) {
 
@@ -95,12 +94,16 @@ PVector[] bezierToPointsBinTreeOptimized(float[] bezierCurve, int maxPoints) {
     btR.setFromX(midX); 
     btR.setFromY(midY);
 
-    if (countR-- > 0) { // test angle & distance
-      btStack.push(btR);
-    }
-
-    if (countL-- > 0) { // test angle & distance
+    float curAngle = cur.getAngle();
+ 
+    if (abs(curAngle-btL.getAngle()) > maxAngle) { // test angle & distance
+      println("angles cur="+curAngle*360/TWO_PI+" btL="+btL.getAngle()*360/TWO_PI);
       btStack.push(btL);
+    }
+    
+    if (abs(curAngle-btR.getAngle()) > maxAngle) { // test angle & distance
+      println("angles cur="+curAngle*360/TWO_PI+" btR="+btR.getAngle()*360/TWO_PI);
+      btStack.push(btR);
     }
   }
   

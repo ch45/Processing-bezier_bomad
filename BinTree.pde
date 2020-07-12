@@ -2,8 +2,6 @@
  * BinTree.pde
  */
 
-static int sanity = 20;
-
 public class BinTree
 {
   private BinTree left;
@@ -16,8 +14,6 @@ public class BinTree
   float fromY;
   float toX;
   float toY;
-  float distance;
-  float angle;
 
   BinTree(
     float fromT,
@@ -46,6 +42,13 @@ public class BinTree
   BinTree getLeft() { return left; }
   BinTree getRight() { return right; }
   
+  float getAngle() {
+    float x = toX - fromX;
+    float y = toY - fromY;
+    float hypotenuse = sqrt(sq(x)+sq(y));
+    return HALF_PI + sin(x / hypotenuse);
+  }
+  
   void setFromX(float fromX) { this.fromX = fromX; }
   void setFromY(float fromY) { this.fromY = fromY; }
   void setToX(float toX) { this.toX = toX; }
@@ -69,7 +72,6 @@ public class BinTree
     
     // traverse down on the left side
     while (cur.left != null) {
-      if (--sanity == 0) return null;
       cur = cur.left;
       println("nextLeaf() traverse #1 to "+cur.fromT+"-"+cur.toT+" left="+(cur.left!=null?"ptr":"null")+" right="+(cur.right!=null?"ptr":"null")+" parent="+(cur.parent!=null?"ptr":"null"));
     }
@@ -88,7 +90,6 @@ public class BinTree
       cur = cur.parent.right;
       println("nextLeaf() traverse #3 to "+cur.fromT+"-"+cur.toT+" left="+(cur.left!=null?"ptr":"null")+" right="+(cur.right!=null?"ptr":"null")+" parent="+(cur.parent!=null?"ptr":"null"));
       while (cur.left != null) {
-        if (--sanity == 0) return null;
         cur = cur.left;
         println("nextLeaf() traverse #4 to "+cur.fromT+"-"+cur.toT+" left="+(cur.left!=null?"ptr":"null")+" right="+(cur.right!=null?"ptr":"null")+" parent="+(cur.parent!=null?"ptr":"null"));
       }
