@@ -96,12 +96,12 @@ PVector[] bezierToPointsBinTreeOptimized(float[] bezierCurve, float maxAngle) {
 
     float curAngle = cur.getAngle();
  
-    if (abs(curAngle-btL.getAngle()) > maxAngle) { // test angle & distance
+    if (diffRadianAngle(curAngle, btL.getAngle()) > maxAngle) { // test angle & todo distance
       println("angles cur="+curAngle*360/TWO_PI+" btL="+btL.getAngle()*360/TWO_PI);
       btStack.push(btL);
     }
     
-    if (abs(curAngle-btR.getAngle()) > maxAngle) { // test angle & distance
+    if (diffRadianAngle(curAngle, btR.getAngle()) > maxAngle) { // test angle & todo distance
       println("angles cur="+curAngle*360/TWO_PI+" btR="+btR.getAngle()*360/TWO_PI);
       btStack.push(btR);
     }
@@ -134,6 +134,13 @@ float[][] scaleBezierCurves(float[][] bezierCurves, float mx, float my, float cx
   return bezierCurves;
 }
 
+float diffRadianAngle(float a1, float a2) {
+  float diff = abs(a1 - a2);
+  if (diff > PI) { // wrap around at 2pi
+    diff = TWO_PI - diff;
+  }
+  return diff;
+}
 float[][] getShapeAsBezierCurves() {
   float arr[][] = {
     {10,10, 50,20, 90,30, 100,100}
