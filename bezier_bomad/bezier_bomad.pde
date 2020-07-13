@@ -29,12 +29,28 @@ void draw() {
     PVector[] pointsToDraw = bezierToPointsBinTreeOptimized(bez, maxAngle, maxDistance);
     for (PVector vec : pointsToDraw) {
       ellipse(vec.x, vec.y, 5, 5);
+      if (count == 0) {
+        moveTo(vec.x, vec.y);
+      } else {
+        lineTo(vec.x, vec.y);
+      }
       count++;
     }
   }
   println("count="+count);
   oneShot++;
   }
+}
+
+float _x, _y;
+
+void moveTo(float x, float y) {
+  _x = x; _y = y;
+}
+
+void lineTo(float x, float y) {
+  line(_x, _y, x, y);
+  _x = x; _y = y;
 }
 
 PVector[] bezierToPointsUnoptimized(float[] bezierCurve, int maxPoints) {
@@ -152,6 +168,7 @@ float diffRadianAngle(float a1, float a2) {
   }
   return diff;
 }
+
 float[][] getBasicShapeAsBezierCurves() {
   float arr[][] = {
     {10,10, 50,20, 90,30, 100,100}
