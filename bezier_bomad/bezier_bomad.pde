@@ -23,8 +23,17 @@ void draw() {
   float bezierCurves[][] = scaleBezierCurves(getSerifLetterAsBezierCurves(), 3.0, -3.0, 50.0, 550.0);
 
   int maxPoints = 100;
-  float maxAngle = TWO_PI * 2.4 / 360; // with getBasicShape... 0.50 => 64 points
-  float maxDistance = 4.0;             // with getBasicShape... 0.15 => 63 points
+
+  //
+  // maxAngle                    |   0.5  |        |   1.0  |        |   1.5  |        |   2.4  |        |
+  // maxDistance                 |        |   0.15 |        |   0.5  |        |   2.0  |        |   4.0  |
+  //                             |--------|--------|--------|--------|--------|--------|--------|--------|
+  // counts... getBasicShape...  |  64    |  63    |  34    |  35    |  20    |  19    |   12   |  12    |
+  //           getSerifLetter... | 950    | 403    | 491    | 238    | 339    | 132    |  221   | 103    |
+  //
+  float maxAngle = TWO_PI * 2.4 / 360;
+  float maxDistance = 4.0;
+
   int count = 0;
   for (float[] bez : bezierCurves) {
     // Swap the commented out lines to use non-optimizing vs. optimizing logic
