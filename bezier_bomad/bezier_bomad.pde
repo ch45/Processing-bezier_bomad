@@ -1,6 +1,9 @@
-//
-// bezier_bomad.pde
-//
+/*
+ * bezier_bomad.pde
+ * Bezier Optimization Minimum Angle & Distance (BOMAD)
+ *
+ * Charles Ford, 2020
+ */
 
 import java.util.ArrayDeque;
 
@@ -15,14 +18,15 @@ void draw() {
   fill(255, 102, 0);
   stroke(255, 102, 0);
 
-  float bezierCurves[][] = scaleBezierCurves(getShapeAsBezierCurves(), 6.0, 6.0, 0.0, 0.0);
+  float bezierCurves[][] = scaleBezierCurves(getBasicShapeAsBezierCurves(), 6.0, 6.0, 0.0, 0.0);
 
   int maxPoints = 100;
-  float maxAngle = TWO_PI * 1.5 / 360; // 0.29 => 94 points
+  float maxAngle = TWO_PI * 2.4 / 360; // with getBasicShape... 0.50 => 64 points
+  float maxDistance = 4.0;             // with getBasicShape... 0.15 => 63 points
   int count = 0;
   for (float[] bez : bezierCurves) {
     // PVector[] pointsToDraw = bezierToPointsUnoptimized(bez, maxPoints);
-    PVector[] pointsToDraw = bezierToPointsBinTreeOptimized(bez, maxAngle);
+    PVector[] pointsToDraw = bezierToPointsBinTreeOptimized(bez, maxAngle, maxDistance);
     for (PVector vec : pointsToDraw) {
       ellipse(vec.x, vec.y, 5, 5);
       count++;
@@ -54,7 +58,7 @@ PVector[] bezierToPointsUnoptimized(float[] bezierCurve, int maxPoints) {
   return bezierPoints;
 }
 
-PVector[] bezierToPointsBinTreeOptimized(float[] bezierCurve, float maxAngle) {
+PVector[] bezierToPointsBinTreeOptimized(float[] bezierCurve, float maxAngle, float maxDistance) {
   float x1 = bezierCurve[0];
   float y1 = bezierCurve[1];
   float x2 = bezierCurve[2];
@@ -66,9 +70,9 @@ PVector[] bezierToPointsBinTreeOptimized(float[] bezierCurve, float maxAngle) {
 
   float fromT = 0.0;
   float toT = 1.0;
-  float fromX = bezierPoint(x1, x2, x3, x4, fromT); 
+  float fromX = bezierPoint(x1, x2, x3, x4, fromT);
   float fromY = bezierPoint(y1, y2, y3, y4, fromT);
-  float toX = bezierPoint(x1, x2, x3, x4, toT); 
+  float toX = bezierPoint(x1, x2, x3, x4, toT);
   float toY = bezierPoint(y1, y2, y3, y4, toT);
 
   BinTree root = new BinTree(fromT, toT, fromX, fromY, toX, toY);
@@ -81,42 +85,49 @@ PVector[] bezierToPointsBinTreeOptimized(float[] bezierCurve, float maxAngle) {
   while ((cur = btStack.poll()) != null) {
 
     cur.insertSplit(); // Leaves some data unpopulated
-    
+
     // Populate the intermediate point from the bezier curve
     BinTree btL = cur.getLeft();
     BinTree btR = cur.getRight();
-    
+
     float midT = btL.getToT();
     float midX = bezierPoint(x1, x2, x3, x4, midT);
     float midY = bezierPoint(y1, y2, y3, y4, midT);
-    btL.setToX(midX); 
+    btL.setToX(midX);
     btL.setToY(midY);
-    btR.setFromX(midX); 
+    btR.setFromX(midX);
     btR.setFromY(midY);
 
     float curAngle = cur.getAngle();
- 
-    if (diffRadianAngle(curAngle, btL.getAngle()) > maxAngle) { // test angle & todo distance
-      println("angles cur="+curAngle*360/TWO_PI+" btL="+btL.getAngle()*360/TWO_PI);
-      btStack.push(btL);
-    }
-    
-    if (diffRadianAngle(curAngle, btR.getAngle()) > maxAngle) { // test angle & todo distance
-      println("angles cur="+curAngle*360/TWO_PI+" btR="+btR.getAngle()*360/TWO_PI);
+
+    float diffAngleL = diffRadianAngle(curAngle, btL.getAngle());
+    float diffAngleR = diffRadianAngle(curAngle, btR.getAngle());
+
+    // the minimumu distance the point is from the current line, opposite = hypotenuse * sine(angle)
+    float distancePtL = btL.getMagnitude() * sin(diffAngleL);
+    float distancePtR = btR.getMagnitude() * sin(diffAngleR);;
+
+    if (diffAngleR > maxAngle || distancePtR > maxDistance) {
+      println("angles cur="+curAngle*360/TWO_PI+" btR="+btR.getAngle()*360/TWO_PI+" diffAngleR="+diffAngleR*360/TWO_PI+" distancePtR="+distancePtR);
       btStack.push(btR);
     }
+
+    if (diffAngleL > maxAngle || distancePtL > maxDistance) {
+      println("angles cur="+curAngle*360/TWO_PI+" btL="+btL.getAngle()*360/TWO_PI+" diffAngleL="+diffAngleL*360/TWO_PI+" distancePtL="+distancePtL);
+      btStack.push(btL);
+    }
   }
-  
+
   // Takes a (2d for now) bezier curve anchor and control points and returns an array of points along that curve
   ArrayList<PVector> bezierPoints = new ArrayList<PVector>();
 
   bezierPoints.add(new PVector(root.getFromX(), root.getFromY()));
-  
+
   cur = root;
   while ((cur = cur.nextLeaf()) != null) {
     bezierPoints.add(new PVector(cur.getToX(), cur.getToY()));
   }
-  
+
   return bezierPoints.toArray(new PVector[bezierPoints.size()]);
 }
 
@@ -141,7 +152,7 @@ float diffRadianAngle(float a1, float a2) {
   }
   return diff;
 }
-float[][] getShapeAsBezierCurves() {
+float[][] getBasicShapeAsBezierCurves() {
   float arr[][] = {
     {10,10, 50,20, 90,30, 100,100}
   };

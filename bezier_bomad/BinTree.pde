@@ -1,5 +1,8 @@
 /*
  * BinTree.pde
+ * used by: Bezier Optimization Minimum Angle Distance (BOMAD)
+ *
+ * Charles Ford, 2020
  */
 
 public class BinTree
@@ -41,19 +44,25 @@ public class BinTree
   float getToY() { return toY; }
   BinTree getLeft() { return left; }
   BinTree getRight() { return right; }
-  
-  float getAngle() {
+
+  float getMagnitude() {
     float x = toX - fromX;
     float y = toY - fromY;
     float hypotenuse = sqrt(sq(x)+sq(y));
+    return hypotenuse;
+  }
+
+  float getAngle() {
+    float x = toX - fromX;
+    float hypotenuse = getMagnitude();
     return HALF_PI + sin(x / hypotenuse);
   }
-  
+
   void setFromX(float fromX) { this.fromX = fromX; }
   void setFromY(float fromY) { this.fromY = fromY; }
   void setToX(float toX) { this.toX = toX; }
   void setToY(float toY) { this.toY = toY; }
-  
+
   void insertSplit() {
     if (left != null || right != null) return;
     float midT = fromT + (toT - fromT) / 2.0;
@@ -63,13 +72,13 @@ public class BinTree
     right.parent = this;
     println("insertSplit() fromT="+fromT+" midT="+midT+" toT="+toT);
   }
-  
+
   BinTree nextLeaf() {
-    
+
     BinTree cur = this;
-    
+
     println("nextLeaf() start "+cur.fromT+"-"+cur.toT+" left="+(cur.left!=null?"ptr":"null")+" right="+(cur.right!=null?"ptr":"null")+" parent="+(cur.parent!=null?"ptr":"null"));
-    
+
     // traverse down on the left side
     while (cur.left != null) {
       cur = cur.left;
